@@ -10,15 +10,30 @@ import {
 import { PrismaClient, Role } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import { InternalServerErrorException } from '@nestjs/common';
+import { IsNotEmpty } from 'class-validator';
 
 const prisma = new PrismaClient();
+
+class RoleDataInterfaces {
+  @IsNotEmpty()
+  name: string;
+}
 
 @Controller('role')
 export class RoleController {
   @Get()
   async findAll(): Promise<Role[]> {
-    const data = await prisma.role.findMany();
-    return data;
+    try {
+      const data = await prisma.role.findMany();
+
+      if (!data) {
+        throw new NotFoundException('Data not found');
+      }
+
+      return data;
+    } catch (error) {
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
 
   @Get(':id')
@@ -39,31 +54,51 @@ export class RoleController {
   }
 
   @Post()
-  async create(@Body() roleData: { name: string }): Promise<Role> {
-    const { name } = roleData;
-    return await prisma.role.create({
-      data: {
-        name: name,
-      },
-    });
+  async create(@Body() roleData: RoleDataInterfaces): Promise<Role> {
+    try {
+      const { name } = roleData;
+      return await prisma.role.create({
+        data: {
+          name: name,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
 
   @Put(':id')
   async update(
     @Param('id') id: number,
-    @Body() roleData: { name: string },
+    @Body() roleData: RoleDataInterfaces,
   ): Promise<Role> {
-    const { name } = roleData;
-    return await prisma.role.update({
-      where: { id: Number(id) },
-      data: { name: name },
-    });
+    try {
+      const { name } = roleData;
+      const data = await prisma.role.update({
+        where: { id: Number(id) },
+        data: { name: name },
+      });
+      if (!data) {
+        throw new NotFoundException('Data not found');
+      }
+      return data;
+    } catch (error) {
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
 
   @Delete(':id')
   async delete(@Param('id') id: number): Promise<Role> {
-    return await prisma.role.delete({
-      where: { id: Number(id) },
-    });
+    try {
+      const data = await prisma.role.delete({
+        where: { id: Number(id) },
+      });
+      if (!data) {
+        throw new NotFoundException('Data not found');
+      }
+      return data;
+    } catch (error) {
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
 }
