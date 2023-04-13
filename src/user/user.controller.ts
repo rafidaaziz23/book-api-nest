@@ -11,7 +11,7 @@ import { PrismaClient, User } from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsNotEmpty, IsEmail } from 'class-validator';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
